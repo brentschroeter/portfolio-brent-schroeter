@@ -82,8 +82,7 @@ class Typewriter extends Component {
         {arrayReplace(currentText.split(''), REPLACEMENTS)}
         <span
           style={{
-            visibility: currentText !== goalText || cursorVisible ? 'visible' : 'hidden',
-            color: '#7AF',
+            color: currentText !== goalText || cursorVisible ? '#7AF' : 'transparent',
           }}
         >
           |

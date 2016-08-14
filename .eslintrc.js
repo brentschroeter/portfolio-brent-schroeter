@@ -1,6 +1,13 @@
 module.exports = {
-    "extends": "airbnb",
-    "plugins": [
-        "react"
-    ]
+  extends: 'airbnb',
+  plugins: [
+    'react',
+  ],
+  parserOptions: {
+    ecmaVersion: 6,
+    ecmaFeatures: {
+      experimentalObjectRestSpread: true,
+    },
+    restParams: true,
+  },
 };

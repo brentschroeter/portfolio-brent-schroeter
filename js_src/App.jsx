@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { PropTypes } from 'react';
 import ReactDOM from 'react-dom';
-import { createStore } from 'redux';
+import { connect, Provider as ReduxProvider } from 'react-redux';
+import { compose, createStore } from 'redux';
 import {
   createStoreWithRouter,
   provideRouter,
@@ -42,43 +43,49 @@ if (initialLocation) {
   store.dispatch(initializeCurrentLocation(initialLocation));
 }
 
-const updateTitle = () => {
-  const { router } = store.getState();
-  const { title } = router.result;
-  document.title = ejs.render(title, {
-    params: router.params,
-    result: router.result,
+const updateTitle = ({ template, params, result }) => {
+  document.title = ejs.render(template, {
+    params,
+    result,
   }, { escape: false });
 };
 
-class App extends React.Component {
-  constructor(...args) {
-    super(...args);
-    updateTitle();
-    store.subscribe(() => {
-      updateTitle();
-      // this.forceUpdate();
-    });
-  }
-
-  render() {
-    const { storyName } = store.getState().router.params;
-    return (
-      <div style={styles.app}>
-        <Navigation />
-        <div style={styles.contentBody}>
-          <Fragment forRoute="/">
-            {content.home}
-          </Fragment>
-          <Fragment forRoute="/stories/:storyName">
-            {storyName && content.stories[storyName]}
-          </Fragment>
-        </div>
+const App = props => {
+  const { router } = props;
+  const { storyName } = router.params;
+  const { title } = router.result;
+  updateTitle({
+    template: title,
+    params: router.params,
+    result: router.result,
+  });
+  return (
+    <div style={styles.app}>
+      <Navigation />
+      <div style={styles.contentBody}>
+        <Fragment forRoute="/">
+          {content.home}
+        </Fragment>
+        <Fragment forRoute="/stories/:storyName">
+          {storyName && content.stories[storyName]}
+        </Fragment>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
-const AppWithRouter = provideRouter({ store })(App);
+App.propTypes = {
+  router: PropTypes.object,
+};
 
-ReactDOM.render(<AppWithRouter />, document.getElementById('mountNode'));
+const ComposedApp = compose(
+  provideRouter({ store }),
+  connect(state => ({
+    router: state.router,
+  }))
+)(App);
+
+ReactDOM.render(
+  <ReduxProvider store={store}><ComposedApp /></ReduxProvider>,
+  document.getElementById('mountNode')
+);
